@@ -112,9 +112,10 @@ const SingleReview = () => {
                     <Icons.quote />
                   </div>
                   <div className="flex items-center gap-2">
-                    <img src={item.image} alt={item.name} className="h-8 w-8" />
+                    <img src={item.image} alt={item.name} className="size-12" />
                     <p className="trim font-sans text-[18px] text-white">
-                      {item.name}, {item.location}
+                      {item.name}, <br />
+                      {item.location}
                     </p>
                   </div>
                 </div>

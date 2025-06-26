@@ -66,7 +66,15 @@ const Promise = () => {
     }
   };
 
-  // Add event listeners for video play/pause events
+  const handleRestartClick = (e) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
+
+  // Add event listeners for video play/pause events and intersection observer
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -79,10 +87,38 @@ const Promise = () => {
     video.addEventListener("pause", handlePause);
     video.addEventListener("ended", handleEnded);
 
+    // Set up intersection observer for autoplay and autopause
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          console.log(
+            "Video intersection:",
+            entry.isIntersecting,
+            "Video paused:",
+            video.paused,
+          );
+          if (entry.isIntersecting && video.paused) {
+            console.log("Attempting to play video");
+            video.play().catch(() => {
+              // Autoplay failed, which is expected on some browsers
+              console.log("Autoplay failed - user interaction required");
+            });
+          } else if (!entry.isIntersecting && !video.paused) {
+            console.log("Pausing video - out of view");
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.5 },
+    );
+
+    observer.observe(video);
+
     return () => {
       video.removeEventListener("play", handlePlay);
       video.removeEventListener("pause", handlePause);
       video.removeEventListener("ended", handleEnded);
+      observer.disconnect();
     };
   }, []);
 
@@ -94,16 +130,17 @@ const Promise = () => {
       <div className="mb-[150px] flex flex-col items-center gap-[70px]">
         <h4
           className="text-grain trim !bg-[#191717] text-center text-4xl font-normal tracking-wide md:text-[64px]"
-          data-text="What It Really Looks Like When We Show Up."
+          data-text="What It Really Looks Like When We Show Up"
         >
-          What It Really Looks Like When We Show Up.
+          What It Really Looks <br /> Like When We Show Up
         </h4>
         <div className="paper-bg-8 flex w-full max-w-fit flex-col items-center justify-center gap-2 rounded-[2.395px] border-[1.2px] border-[rgba(106,100,100,0.12)] bg-white p-[7.2px] pb-[14.37px] md:mx-auto">
-          <div className="relative w-full max-w-[400px]">
+          <div className="group relative w-full max-w-[400px]">
             <video
               className="aspect-[9/16] h-auto w-full rounded-sm"
               ref={videoRef}
               playsInline
+              muted
               preload="metadata"
             >
               <source
@@ -132,6 +169,27 @@ const Promise = () => {
                     : "scale-100 opacity-100 hover:scale-110",
                 )}
               />
+            </button>
+            <button
+              onClick={handleRestartClick}
+              aria-label="Restart video"
+              className="absolute top-3 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-black/80"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M3 21v-5h5" />
+              </svg>
             </button>
           </div>
         </div>
