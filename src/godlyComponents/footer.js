@@ -174,7 +174,9 @@ const Footer = () => {
                 textDecoration: "none",
               }}
             >
-              <span className="text-sm md:text-[20px]">{city}</span>
+              <span className="text-sm md:text-[20px]">
+                {city.replace(/_/g, "-")}
+              </span>
             </Link>
           ))}
         </div>
